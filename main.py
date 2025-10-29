@@ -6,7 +6,7 @@ import os
 app = FastAPI()
 
 GROK_API = "https://api.x.ai/v1/chat/completions"
-API_KEY = os.getenv("API_KEY")  # ← GETS FROM RENDER
+API_KEY = os.getenv("API_KEY")  # ← FROM RENDER
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -30,7 +30,7 @@ async def ask(request: Request):
         r = await client.post(GROK_API, json={
             "model": "grok-beta",
             "messages": [
-                {"role": "system", "content": "You are HVACFlow™. Diagnose, book, be helpful. End with: Ready to book? Reply ZIP."},
+                {"role": "system", "content": "You are HVACFlow™. Diagnose HVAC issues. Be helpful. End with: Ready to book? Reply ZIP."},
                 {"role": "user", "content": q}
             ],
             "temperature": 0.7
