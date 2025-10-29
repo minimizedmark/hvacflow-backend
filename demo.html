@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html><body style="background:#000;color:#0f0;font-family:Arial;padding:20px;">
+<h1>HVACFlow™ Demo</h1>
+<div id="chat" style="height:60vh;overflow:auto;border:1px solid #0f0;padding:10px;"></div>
+<input id="input" placeholder="AC not cooling?" style="width:100%;padding:10px;background:#111;color:#0f0;border:1px solid #0f0;" />
+<script>
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('input');
+  async function ask(q) {
+    const res = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST', headers: {'Authorization': 'Bearer YOUR_XAI_KEY_HERE', 'Content-Type': 'application/json'},
+      body: JSON.stringify({model: 'grok-beta', messages: [{role: 'system', content: 'You are HVACFlow™. Diagnose, book, sell.'}, {role: 'user', content: q}], temperature: 0.7})
+    });
+    const data = await res.json();
+    return data.choices[0].message.content;
+  }
+  input.onkeypress = async (e) => {
+    if (e.key === 'Enter') {
+      chat.innerHTML += `<p><b>You:</b> ${input.value}</p>`;
+      const reply = await ask(input.value);
+      chat.innerHTML += `<p><b>HVACFlow™:</b> ${reply}</p>`;
+      chat.scrollTop = chat.scrollHeight;
+      input.value = '';
+    }
+  };
+</script>
+</body></html>
