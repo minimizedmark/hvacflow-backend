@@ -51,17 +51,27 @@ async def ask(request: Request):
     data = await request.json()
     q = data.get("q", "")
     async with httpx.AsyncClient() as client:
-        r = await client.post(
-            "https://api.x.ai/v1/chat/completions",
-            json={
-                "model": "grok-beta",
-                "messages": [
-                    {"role": "system", "content": "You are HVACFlow™. Diagnose HVAC issues. Be helpful. End with: Ready to book? Reply ZIP."},
-                    {"role": "user", "content": q}
-                ],
-                "temperature": 0.7
-            },
-            headers={"Authorization": f"Bearer {API_KEY}"}
-        )
-        reply = r.json()["choices"][0]["message"]["content"]
-    return {"reply": reply}
+        try:
+            r = await client.post(
+                "https://api.x.ai/v1/chat/completions",
+                json={
+                    "model": "grok-beta",
+                    "messages": [
+                        {"role": "system", "content": "You are HVACFlow™. Diagnose HVAC issues. Be helpful. End with: Ready to book? Reply ZIP."},
+                        {"role": "user", "content": q}
+                    ],
+                    "temperature": 0.7
+                },
+                headers={"Authorization": f"Bearer {API_KEY}"},
+                timeout=30.0
+            )
+            r.raise_for_status()
+            response_data = r.json()
+            if "choices" in response_data and len(response_data["choices"]) > 0:
+                return {"reply": response_data["choices"][0]["message"]["content"]}
+            else:
+                return {"reply": "Sorry, I couldn't process that. Try again."}
+        except httpx.HTTPStatusError as e:
+            return {"reply": f"API Error: {e.response.status_code}"}
+        except Exception as e:
+            return {"reply": "Service temporarily down. Try again soon."}
